@@ -1,0 +1,67 @@
+{
+  "summary": "Aether MVP iteration 1 — comprehensive backend + frontend testing. Found and fixed 1 critical backend bug (str.format KeyError in DEBATE/INTERVIEW system templates due to unescaped JSON braces) that was blocking /api/debate/start and /api/interview/start (500 errors). After fix, 15/15 backend tests pass and all key frontend flows verified on mobile viewport (375x667 equivalent).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {
+        "endpoint": "POST /api/interview/answer",
+        "issue": "Server relies entirely on the LLM returning finished=true on the 5th user answer. The LLM does not always honor the end_hint, making the 'finishes after 5 answers' contract non-deterministic. Recommend force-setting finished=True server-side when turn_count >= 5, regardless of LLM response. Also force data.get('question','') to '' in that case."
+      },
+      {
+        "endpoint": "GET /api/dashboard/stats",
+        "issue": "Uses Pydantic v1-style `.dict()` (user_to_out(user).dict()). With Pydantic v2 this still works but is deprecated; prefer .model_dump()."
+      },
+      {
+        "endpoint": "POST /api/auth/signup",
+        "issue": "Streak is set to 1 at signup but _touch_streak is not called on signup; only login triggers it. Minor — first signup login next day will still bump correctly."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "(tabs)/_layout.tsx",
+        "issue": "Bottom tab buttons have no testID — testing must rely on visible text. Suggest adding tabBarTestID per Tabs.Screen (testID='tab-home', 'tab-train', 'tab-debate', 'tab-analyze', 'tab-mentor').",
+        "testID": "missing tab-* testIDs",
+        "priority": "MEDIUM"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": [
+      {
+        "screen": "global",
+        "issues": [
+          "React Native Web warnings: \"shadow*\" style props deprecated, use boxShadow. Multiple components emit this warning. Non-blocking but should be migrated.",
+          "props.pointerEvents deprecated warning on at least one component."
+        ]
+      }
+    ],
+    "react_native_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_aether_api.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Make interview finish deterministic: in /api/interview/answer, set finished=True server-side when sum(user turns) >= 5 (and override data['finished']=True, data['question']='').",
+    "Add testID props to bottom Tabs.Screen entries (tabBarTestID) so UI tests don't depend on visible label text.",
+    "Migrate deprecated shadow* style props to boxShadow across components to silence RN Web warnings.",
+    "Optional: switch Pydantic v1 .dict() to .model_dump()."
+  ],
+  "critical_code_review_comments": [
+    "BUG FIXED: DEBATE_SYSTEM_TEMPLATE and INTERVIEW_SYSTEM_TEMPLATE used .format() with literal JSON braces, causing KeyError: '\"opponent_reply\"' / '\"question\"'. Braces must be escaped as {{ }}. Fixed in /app/backend/server.py.",
+    "server.py is ~780 lines — approaching the 700-line guideline; consider splitting into routers (auth.py, mentor.py, speech.py, debate.py, interview.py, missions.py, dashboard.py).",
+    "LLM JSON parsing in llm_json() is defensive (falls back to {_raw: text}) — good. But several endpoints return {_raw: ...} silently with 200, which would surface as broken UI. Consider logging a warning when fallback fires.",
+    "CORS allow_origins=['*'] is fine for MVP but should be tightened for production."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (escaped JSON braces in DEBATE_SYSTEM_TEMPLATE and INTERVIEW_SYSTEM_TEMPLATE)",
+    "/app/backend/tests/test_aether_api.py (new — 15 pytest cases)"
+  ],
+  "success_rate": {"backend": "100% (15/15)", "frontend": "100% on flows tested (login, home, mentor chat with AI reply, debate tab + suggested topic → session screen → turn → finish breakdown, analyze tab → navigate to feedback with scorecard, train tab, quick-interview tile → mock interview screen)"},
+  "seed_data_creation": "No new seed data. Used demo@aether.app / demo1234 (already exists). Mission completion + speech analyze created records under demo user.",
+  "retest_needed": true,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend file split + interview deterministic finish are the remaining fixes. Frontend flows are all functional end-to-end with real Claude Sonnet 4.5 responses. AI endpoints take ~5-12s; use ≥60s timeouts. Tab navigation in playwright currently uses page.get_by_text('Home'|'Train'|'Debate'|'Analyze'|'Mentor', exact=True).last because tabs lack testIDs.",
+  "rca_of_issue": "ROOT CAUSE — /api/debate/start and /api/interview/start returned 500. Backend traceback: KeyError: '\"opponent_reply\"' (and '\"question\"' for interview). The system-message template strings embed a JSON schema example like {\"opponent_reply\": str, ...} and then call .format(stance=..., topic=..., level=...). Python's str.format treats every { ... } as a placeholder, so it tried to look up a parameter named \"opponent_reply\" and crashed. FIX — escape every literal brace in the JSON example as {{ and }}. After fix: debate/start, debate/turn, debate/{id}/finish, interview/start, interview/answer all return 200 with valid LLM-parsed JSON. Verified via 15/15 pytest run and end-to-end UI walkthrough."
+}
