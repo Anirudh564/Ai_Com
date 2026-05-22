@@ -723,9 +723,17 @@ async def missions_complete(req: MissionCompleteReq, user: dict = Depends(get_cu
 async def dashboard(user: dict = Depends(get_current_user)):
     today_missions = await _ensure_user_missions_today(user["id"])
     done = sum(1 for m in today_missions if m.get("completed"))
-    # Latest 5 reports for trend
+    # Latest 5 reports for trend — project only fields needed for trend rendering
     recent = await db.reports.find(
-        {"user_id": user["id"]}, {"_id": 0}
+        {"user_id": user["id"]},
+        {
+            "_id": 0,
+            "created_at": 1,
+            "data.overall_score": 1,
+            "data.confidence_score": 1,
+            "data.structure_score": 1,
+            "data.voice_score": 1,
+        },
     ).sort("created_at", -1).to_list(10)
     trend = []
     for r in reversed(recent):
