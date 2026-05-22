@@ -607,6 +607,10 @@ async def interview_answer(req: InterviewAnswerReq, user: dict = Depends(get_cur
         + f"\n\nCANDIDATE answer:\n{req.answer}\n\nEvaluate and ask the next question." + end_hint
     )
     data = await llm_json(system, prompt, session_id=req.interview_id)
+    # Deterministic server-side finish after 5th user answer (don't rely on the LLM)
+    if turn_count >= 5:
+        data["finished"] = True
+        data["question"] = ""
     d["turns"].append({"role": "user", "content": req.answer, "ts": utcnow().isoformat()})
     d["turns"].append({"role": "ai", "data": data, "ts": utcnow().isoformat()})
     finished = bool(data.get("finished"))
