@@ -1,0 +1,112 @@
+{
+  "theme": {
+    "mode": "dark",
+    "archetype": "Hybrid of Archetype 5 (Jewel & Luxury) & Archetype 2 (The Performance Pro) — Elite Obsidian",
+    "primary_vibe": "Elite, intelligent, focused, emotionally calming, high-performance coaching"
+  },
+  "colors": {
+    "backgrounds": {
+      "base": "#09090B",
+      "surface": "#18181B",
+      "surface_elevated": "#27272A",
+      "glass": "bg-zinc-950/70 backdrop-blur-2xl"
+    },
+    "text": {
+      "primary": "#FAFAFA",
+      "secondary": "#A1A1AA",
+      "muted": "#52525B"
+    },
+    "accents": {
+      "primary": "#2563EB",
+      "primary_glow": "rgba(37, 99, 235, 0.4)",
+      "gamification_xp": "#F59E0B",
+      "success": "#10B981",
+      "correction": "#F43F5E"
+    },
+    "borders": {
+      "default": "#27272A",
+      "subtle": "#3F3F46",
+      "glass": "border-white/10"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Cabinet Grotesk, sans-serif",
+      "weight": "800",
+      "tracking": "tracking-tight"
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "weight": "400",
+      "tracking": "tracking-normal"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "usage": "Timestamps, XP numbers, analytical scores, logical fallacy identifiers"
+    }
+  },
+  "spacing_and_layout": {
+    "mobile_container": "px-4 py-6 md:px-6",
+    "card_padding": "p-5 md:p-6",
+    "bento_gap": "gap-4",
+    "bottom_nav_height": "h-20 pb-safe",
+    "border_radius": {
+      "cards": "rounded-2xl",
+      "buttons": "rounded-full",
+      "bottom_sheet": "rounded-t-3xl"
+    }
+  },
+  "components": {
+    "cards": "Solid background #18181B (zinc-900), 1px border #27272A (zinc-800), no aggressive drop shadow. Use inner highlights for premium depth.",
+    "buttons": "Primary CTAs: bg-blue-600 text-white rounded-full font-bold shadow-[0_0_15px_rgba(37,99,235,0.4)]. Secondary: border border-zinc-700 text-zinc-300 rounded-full bg-zinc-900.",
+    "bottom_nav": "Fixed to bottom, glassmorphic bg-zinc-950/80 backdrop-blur-xl border-t border-white/5. Icons: @phosphor-icons/react (Duotone style).",
+    "ai_feedback_card": "Subtle blue tinted background (bg-blue-950/20) with a left border-l-2 border-blue-500. Timestamps in JetBrains Mono text-blue-400.",
+    "progress_rings": "SVG circular progress indicator. Background ring stroke-zinc-800, active ring stroke-amber-500 (streaks) or blue-500 (scores).",
+    "charts": "Recharts AreaChart or LineChart with thin lines (strokeWidth={2}), no grids, or very subtle dashed grid lines (stroke='#27272A'). Tooltips must be dark-themed with border-white/10."
+  },
+  "motion": {
+    "page_transitions": "Framer Motion: initial={{ opacity: 0, y: 10 }}, animate={{ opacity: 1, y: 0 }}, transition={{ duration: 0.3, ease: 'easeOut' }}",
+    "modals": "Slide up from bottom (y: '100%' to '0%') representing a React Native bottom sheet modal.",
+    "ai_listening": "Infinite pulse animation on the recording button: scale 1 to 1.05 with a soft drop-shadow glow."
+  },
+  "icons_library": "@phosphor-icons/react",
+  "media_assets": {
+    "onboarding": {
+      "background_url": "https://static.prod-images.emergentagent.com/jobs/64c37d0c-f4db-41a2-8a9a-8b5a0fcfa7bf/images/6a623822f37e17d3624d60c1f17a5dc9ce878303ce866b97cea0b80bfbbfe242.png",
+      "description": "Abstract premium dark liquid waves for the welcome/auth screen background."
+    },
+    "ai_mentor": {
+      "avatar_url": "https://static.prod-images.emergentagent.com/jobs/64c37d0c-f4db-41a2-8a9a-8b5a0fcfa7bf/images/c22d60d4be8b1466c3b3f081059ab5cff502d9642adfb3e29f733614b61d012d.png",
+      "description": "Glowing AI orb avatar representing the Claude 4.5 Mentor Chat."
+    },
+    "gamification": {
+      "badge_url": "https://static.prod-images.emergentagent.com/jobs/64c37d0c-f4db-41a2-8a9a-8b5a0fcfa7bf/images/d03d9e1990420a082521c14dd93e4420367da67c9469e620c005ce52b7007cb1.png",
+      "description": "Luxury gold/obsidian shield badge for user milestone popups and profile levels."
+    },
+    "debate_mode": {
+      "icon_url": "https://static.prod-images.emergentagent.com/jobs/64c37d0c-f4db-41a2-8a9a-8b5a0fcfa7bf/images/15c345e8bed8f3371dabcf81a8c543ba3bc22490aa03a02484ec15d2681b2c34.png",
+      "description": "Elegant 3D microphone graphic for the AI debate training system entry point."
+    },
+    "mock_interview": {
+      "interviewer_1_url": "https://images.pexels.com/photos/20586318/pexels-photo-20586318.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "interviewer_2_url": "https://images.pexels.com/photos/31869537/pexels-photo-31869537.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Professional avatars for HR and Leadership interview simulation modes."
+    },
+    "audio_upload": {
+      "background_url": "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MTJ8MHwxfHNlYXJjaHwxfHxwb2RjYXN0JTIwbWljcm9waG9uZSUyMGRhcmslMjBhZXN0aGV0aWN8ZW58MHx8fHwxNzc5NDU3MzgyfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Dark aesthetic microphone image for the analyze/audio upload screen header."
+    }
+  },
+  "instructions_to_main_agent": [
+    "Design specifically for a React web app that looks and feels exactly like a high-end React Native Expo iOS app. On desktop browsers, constrain the main layout to max-w-md or max-w-lg and center it on the screen with a dark background to simulate a mobile frame.",
+    "Implement a persistent Bottom Tab Navigation (Home, Train, Debate, Analyze, Mentor) using a sticky/fixed glassmorphic footer (z-50) over all scrollable content.",
+    "Do NOT use native HTML <select> or <input type='date'>. Use customized Shadcn elements designed to look like mobile bottom-sheet selectors or rounded dark popovers.",
+    "All interactive elements MUST include a data-testid attribute in kebab-case representing their role (e.g., data-testid='start-debate-button', data-testid='home-tab').",
+    "Typography MUST use Cabinet Grotesk for Headings, Manrope for body text, and JetBrains Mono for numbers, metrics, and timestamps. DO NOT default to Inter.",
+    "Do not use #000000 (pure black). Base the app on #09090B (Zinc 950) and layer #18181B (Zinc 900) for cards.",
+    "Incorporate smooth entrance animations using Framer Motion. Apply staggered list animations for the daily missions and feedback items.",
+    "Use @phosphor-icons/react for all iconography. Use Duotone weight for general/inactive icons and Fill weight for active states.",
+    "Install the following dependencies: framer-motion, @phosphor-icons/react, recharts, clsx, tailwind-merge, date-fns.",
+    "Ensure 'AI feedback cards' look distinct from normal content blocks: give them a subtle tinted background (blue-950/20) and a sharp 2px colored left border indicating the feedback type (emerald for praise, rose for critique)."
+  ]
+}
