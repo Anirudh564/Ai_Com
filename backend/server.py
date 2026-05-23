@@ -3,7 +3,7 @@ Elite Communication Mentor - FastAPI backend.
 
 Provides JWT auth, AI mentor chat, speech analysis, AI debate sessions,
 mock interviews, daily missions and a progress dashboard. All AI is powered
-by Claude Sonnet 4.5 through the EMERGENT_LLM_KEY via emergentintegrations.
+by Claude (Anthropic) using a standard ANTHROPIC_API_KEY.
 """
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -21,23 +21,25 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime, timezone, timedelta
 
-from emergentintegrations.llm.chat import LlmChat, UserMessage
+from anthropic import AsyncAnthropic
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 MONGO_URL = os.environ["MONGO_URL"]
 DB_NAME = os.environ["DB_NAME"]
-EMERGENT_LLM_KEY = os.environ["EMERGENT_LLM_KEY"]
+ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("EMERGENT_LLM_KEY")
+if not ANTHROPIC_API_KEY:
+    raise RuntimeError("ANTHROPIC_API_KEY (or legacy EMERGENT_LLM_KEY) is required")
+ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
 JWT_EXPIRE_DAYS = 30
 
-CLAUDE_PROVIDER = "anthropic"
-CLAUDE_MODEL = "claude-sonnet-4-5-20250929"
-
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
+
+anthropic = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
 app = FastAPI(title="Elite Communication Mentor API")
 api = APIRouter(prefix="/api")
@@ -173,7 +175,7 @@ def user_to_out(u: dict) -> UserOut:
     )
 
 
-# ---------------- LLM helpers ----------------
+# ---------------- LLM helpers (Anthropic Claude) ----------------
 MENTOR_SYSTEM = (
     "You are 'Aether', an elite communication transformation mentor for ambitious "
     "college students and young professionals. You are calm, intelligent, professional, "
@@ -185,17 +187,22 @@ MENTOR_SYSTEM = (
 )
 
 
-def make_chat(system: str, session_id: str, model: str = CLAUDE_MODEL) -> LlmChat:
-    chat = LlmChat(api_key=EMERGENT_LLM_KEY, session_id=session_id, system_message=system)
-    chat.with_model(CLAUDE_PROVIDER, model)
-    return chat
+async def call_claude(system: str, user_prompt: str, model: Optional[str] = None) -> str:
+    """Call Claude and return the text response."""
+    response = await anthropic.messages.create(
+        model=model or ANTHROPIC_MODEL,
+        max_tokens=2048,
+        system=system,
+        messages=[{"role": "user", "content": user_prompt}],
+    )
+    if response.content and hasattr(response.content[0], "text"):
+        return response.content[0].text or ""
+    return ""
 
 
 async def llm_json(system: str, prompt: str, session_id: Optional[str] = None) -> Dict[str, Any]:
-    """Ask the LLM for strict JSON and parse it. Falls back gracefully."""
-    chat = make_chat(system, session_id or new_id())
-    raw = await chat.send_message(UserMessage(text=prompt))
-    text = raw if isinstance(raw, str) else str(raw)
+    """Ask Claude for STRICT JSON. Falls back to raw text if parsing fails."""
+    text = await call_claude(system, prompt)
     # Extract JSON block defensively
     start = text.find("{")
     end = text.rfind("}")
@@ -309,9 +316,7 @@ async def mentor_chat(req: ChatTurnReq, user: dict = Depends(get_current_user)):
         (f"Prior context:\n{convo_brief}\n\n" if convo_brief else "")
         + f"User: {req.message}\n\nRespond as Aether."
     )
-    chat = make_chat(system, sid)
-    reply = await chat.send_message(UserMessage(text=prompt))
-    reply_text = reply if isinstance(reply, str) else str(reply)
+    reply_text = await call_claude(system, prompt)
     await db.chat_messages.insert_one({
         "id": new_id(),
         "session_id": sid,
