@@ -21,7 +21,8 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime, timezone, timedelta
 
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
@@ -39,7 +40,7 @@ JWT_EXPIRE_DAYS = 30
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-genai.configure(api_key=GEMINI_API_KEY)
+gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
 app = FastAPI(title="Elite Communication Mentor API")
 api = APIRouter(prefix="/api")
@@ -188,34 +189,31 @@ MENTOR_SYSTEM = (
 
 
 async def call_gemini(system: str, user_prompt: str, model: Optional[str] = None) -> str:
-    """Call Gemini and return the text response."""
-    m = genai.GenerativeModel(
-        model_name=model or GEMINI_MODEL,
-        system_instruction=system,
+    """Call Gemini and return the text response (new google-genai SDK)."""
+    response = await gemini_client.aio.models.generate_content(
+        model=model or GEMINI_MODEL,
+        contents=user_prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system,
+            max_output_tokens=2048,
+        ),
     )
-    response = await m.generate_content_async(
-        user_prompt,
-        generation_config={"max_output_tokens": 2048},
-    )
-    return getattr(response, "text", "") or ""
+    return response.text or ""
 
 
 async def llm_json(system: str, prompt: str, session_id: Optional[str] = None) -> Dict[str, Any]:
-    """Ask Gemini for STRICT JSON. Uses response_mime_type for best results, falls back gracefully."""
-    m = genai.GenerativeModel(
-        model_name=GEMINI_MODEL,
-        system_instruction=system,
-    )
+    """Ask Gemini for STRICT JSON using the modern SDK."""
     try:
-        response = await m.generate_content_async(
-            prompt,
-            generation_config={
-                "max_output_tokens": 2048,
-                "response_mime_type": "application/json",
-            },
+        response = await gemini_client.aio.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                system_instruction=system,
+                max_output_tokens=2048,
+                response_mime_type="application/json",
+            ),
         )
-        text = getattr(response, "text", "") or ""
-        # Gemini with JSON mode should already be clean JSON
+        text = response.text or ""
         try:
             return json.loads(text)
         except Exception:
@@ -223,7 +221,7 @@ async def llm_json(system: str, prompt: str, session_id: Optional[str] = None) -
     except Exception:
         pass
 
-    # Fallback: non-JSON mode + defensive extraction
+    # Fallback without JSON mode
     fallback = await call_gemini(system, prompt)
     start = fallback.find("{")
     end = fallback.rfind("}")
