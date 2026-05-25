@@ -3,7 +3,7 @@ Elite Communication Mentor - FastAPI backend.
 
 Provides JWT auth, AI mentor chat, speech analysis, AI debate sessions,
 mock interviews, daily missions and a progress dashboard. All AI is powered
-by Claude (Anthropic) using a standard ANTHROPIC_API_KEY.
+by Google Gemini (free tier) using GEMINI_API_KEY.
 """
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
@@ -21,17 +21,17 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional, Dict, Any, Literal
 from datetime import datetime, timezone, timedelta
 
-from anthropic import AsyncAnthropic
+import google.generativeai as genai
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 MONGO_URL = os.environ["MONGO_URL"]
 DB_NAME = os.environ["DB_NAME"]
-ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("EMERGENT_LLM_KEY")
-if not ANTHROPIC_API_KEY:
-    raise RuntimeError("ANTHROPIC_API_KEY (or legacy EMERGENT_LLM_KEY) is required")
-ANTHROPIC_MODEL = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise RuntimeError("GEMINI_API_KEY is required (free tier available at https://aistudio.google.com/app/apikey)")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-1.5-flash")
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
 JWT_EXPIRE_DAYS = 30
@@ -39,7 +39,7 @@ JWT_EXPIRE_DAYS = 30
 client = AsyncIOMotorClient(MONGO_URL)
 db = client[DB_NAME]
 
-anthropic = AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+genai.configure(api_key=GEMINI_API_KEY)
 
 app = FastAPI(title="Elite Communication Mentor API")
 api = APIRouter(prefix="/api")
@@ -175,7 +175,7 @@ def user_to_out(u: dict) -> UserOut:
     )
 
 
-# ---------------- LLM helpers (Anthropic Claude) ----------------
+# ---------------- LLM helpers (Google Gemini - free tier) ----------------
 MENTOR_SYSTEM = (
     "You are 'Aether', an elite communication transformation mentor for ambitious "
     "college students and young professionals. You are calm, intelligent, professional, "
@@ -187,32 +187,53 @@ MENTOR_SYSTEM = (
 )
 
 
-async def call_claude(system: str, user_prompt: str, model: Optional[str] = None) -> str:
-    """Call Claude and return the text response."""
-    response = await anthropic.messages.create(
-        model=model or ANTHROPIC_MODEL,
-        max_tokens=2048,
-        system=system,
-        messages=[{"role": "user", "content": user_prompt}],
+async def call_gemini(system: str, user_prompt: str, model: Optional[str] = None) -> str:
+    """Call Gemini and return the text response."""
+    m = genai.GenerativeModel(
+        model_name=model or GEMINI_MODEL,
+        system_instruction=system,
     )
-    if response.content and hasattr(response.content[0], "text"):
-        return response.content[0].text or ""
-    return ""
+    response = await m.generate_content_async(
+        user_prompt,
+        generation_config={"max_output_tokens": 2048},
+    )
+    return getattr(response, "text", "") or ""
 
 
 async def llm_json(system: str, prompt: str, session_id: Optional[str] = None) -> Dict[str, Any]:
-    """Ask Claude for STRICT JSON. Falls back to raw text if parsing fails."""
-    text = await call_claude(system, prompt)
-    # Extract JSON block defensively
-    start = text.find("{")
-    end = text.rfind("}")
+    """Ask Gemini for STRICT JSON. Uses response_mime_type for best results, falls back gracefully."""
+    m = genai.GenerativeModel(
+        model_name=GEMINI_MODEL,
+        system_instruction=system,
+    )
+    try:
+        response = await m.generate_content_async(
+            prompt,
+            generation_config={
+                "max_output_tokens": 2048,
+                "response_mime_type": "application/json",
+            },
+        )
+        text = getattr(response, "text", "") or ""
+        # Gemini with JSON mode should already be clean JSON
+        try:
+            return json.loads(text)
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    # Fallback: non-JSON mode + defensive extraction
+    fallback = await call_gemini(system, prompt)
+    start = fallback.find("{")
+    end = fallback.rfind("}")
     if start != -1 and end != -1 and end > start:
-        chunk = text[start : end + 1]
+        chunk = fallback[start : end + 1]
         try:
             return json.loads(chunk)
         except Exception:
             pass
-    return {"_raw": text}
+    return {"_raw": fallback}
 
 
 # ---------------- Auth endpoints ----------------
@@ -316,7 +337,7 @@ async def mentor_chat(req: ChatTurnReq, user: dict = Depends(get_current_user)):
         (f"Prior context:\n{convo_brief}\n\n" if convo_brief else "")
         + f"User: {req.message}\n\nRespond as Aether."
     )
-    reply_text = await call_claude(system, prompt)
+    reply_text = await call_gemini(system, prompt)
     await db.chat_messages.insert_one({
         "id": new_id(),
         "session_id": sid,
