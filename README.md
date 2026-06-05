@@ -113,7 +113,7 @@ The app uses **gemini-1.5-flash** by default — fast, high quality, and complet
 ### 1. Prerequisites
 - Python 3.10+
 - Node.js 18+ + npm
-- MongoDB running locally (`mongod`) or use free MongoDB Atlas
+- MongoDB running locally (`mongod`) or use free MongoDB Atlas or Supabase
 - Google Gemini API key (free) — see section above
 
 ### 2. Clone & Setup
@@ -235,15 +235,14 @@ Ai_Com/
 
 ## Common Issues & Fixes
 
-| Problem                              | Solution |
-|--------------------------------------|----------|
-| `ModuleNotFoundError: google`        | Run `pip install -r requirements.txt` inside backend venv |
-| MongoDB connection error             | Make sure MongoDB is running locally or use Atlas connection string |
-| Frontend can't reach backend         | Check `EXPO_PUBLIC_BACKEND_URL` in `frontend/.env` and that backend is running |
-| Splash screen error                  | Fixed in this repo (uses splash-image.png) |
-| Yarn not found                       | Install Yarn: `corepack enable && corepack prepare yarn@stable --activate` |
-| Port 8000 already in use             | Kill the process or change port in uvicorn command |
-| Gemini returns empty / slow replies  | Check your GEMINI_API_KEY is valid and has quota at https://aistudio.google.com |
+| Problem | Solution |
+|---------|----------|
+| `Module not found` | Run `npm install` in the `web/` directory |
+| MongoDB connection error | Make sure MongoDB is running locally or use Atlas/Supabase |
+| Frontend can't reach backend | Check `NEXT_PUBLIC_BACKEND_URL` in `web/.env` and that backend is running |
+| npm install fails | Delete `node_modules` and `package-lock.json`, then reinstall |
+| Port 3000 in use | Kill the process or change port in `next.config.js` |
+| Gemini returns empty | Check your `GEMINI_API_KEY` is valid at https://aistudio.google.com |
 
 ---
 
