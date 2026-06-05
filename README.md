@@ -1,25 +1,58 @@
 # Elite Communication Mentor (Aether)
 
-AI-powered communication coach for students & young professionals.
+**A fully-free AI communication coach for students & young professionals.**
 
-**Features**: Daily missions, AI mentor chat, speech analysis, debate sparring, mock interviews, XP/streaks, progress dashboard.
+---
 
-Built with:
-- **Backend**: FastAPI + MongoDB + Google Gemini (free tier)
-- **Frontend**: Expo React Native (works on Web, iOS, Android)
+## Project Summary
+
+A modern web application built with Next.js that provides:
+
+- **AI Mentor Chat**: Conversational coaching with Aether (Gemini-powered)
+- **Speech Analysis**: AI-powered transcript analysis with detailed feedback
+- **Debate Sparring**: Real-time debate practice with AI opponent
+- **Mock Interviews**: HR, college, leadership, internship, and stress interviews
+- **Daily Missions**: Structured communication drills with XP/streaks
+- **Progress Dashboard**: Track scores and improvement trends
+
+**Tech Stack:**
+- Frontend: Next.js 15 + Tailwind CSS + ShadCN UI
+- Backend: FastAPI + MongoDB (or Supabase) + Google Gemini (free tier)
+- Deployment: Vercel (frontend), Render/Railway (backend)
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| **AI Mentor Chat** | Chat with Aether, your personalized communication coach |
+| **Speech Analysis** | Upload transcripts for detailed feedback on voice, structure, confidence |
+| **Debate Sparring** | Practice arguments against an AI opponent with fallacies detection |
+| **Mock Interviews** | 5-question interview simulations (HR, college, leadership, etc.) |
+| **Daily Missions** | 4 rotating daily drills (confidence, pacing, structure, articulation) |
+| **XP & Streaks** | Earn points, level up, and maintain daily streaks |
+| **Progress Dashboard** | Track metrics and improvement over time |
+
+### Daily Missions (Examples)
+
+- 3-Minute Mirror Talk (Confidence)
+- Pause Drill (Pacing)
+- PREP Story (Structure)
+- Filler-Word Hunt (Articulation)
+- Voice Modulation (Tone control)
+- STAR Interview Answer (Interview prep)
 
 ---
 
 ## Prerequisites
 
 - **Python 3.10+**
-- **Node.js 18+** + **Yarn** (the project uses Yarn)
+- **Node.js 18+** + **npm**
 - **MongoDB** (local or MongoDB Atlas)
 - **Google Gemini API Key** (completely free generous tier) → https://aistudio.google.com/app/apikey
 
 ---
 
-## Quick Start (Any Laptop)
+## Quick Start (Web Application)
 
 ### 1. Clone the repository
 
@@ -28,29 +61,19 @@ git clone https://github.com/Anirudh564/Ai_Com.git
 cd Ai_Com
 ```
 
-### 2. Backend Setup
+### 2. Backend Setup (Required for AI features)
 
 ```bash
 cd backend
-
-# Copy environment file
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY (get free key at https://aistudio.google.com/app/apikey)
+# Edit .env and add your GEMINI_API_KEY
 
-# Windows
-.\start.ps1
-
-# Mac / Linux
-chmod +x start.sh
-./start.sh
-```
-
-Or run manually:
-
-```bash
+# Create venv + install
 python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+venv\Scripts\activate          # Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
+
+# Run the server
 uvicorn server:app --reload --port 8000
 ```
 
@@ -58,26 +81,16 @@ Backend will run at **http://localhost:8000**
 
 ### 3. Frontend Setup
 
-Open a **new terminal**:
-
 ```bash
-cd frontend
-
-# Copy environment file
+cd web
 cp .env.example .env
-# (default points to http://localhost:8000 — good for local dev)
+# Edit .env with your backend URL
 
-# Install dependencies
-yarn install
-
-# Start Expo
-npx expo start
+npm install
+npm run dev
 ```
 
-- Press `w` → open in web browser
-- Press `a` → Android emulator
-- Press `i` → iOS simulator (Mac only)
-- Scan QR with **Expo Go** app on your phone
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ---
 
@@ -99,7 +112,7 @@ The app uses **gemini-1.5-flash** by default — fast, high quality, and complet
 
 ### 1. Prerequisites
 - Python 3.10+
-- Node.js 18+ + Yarn (`corepack enable && corepack prepare yarn@stable --activate`)
+- Node.js 18+ + npm
 - MongoDB running locally (`mongod`) or use free MongoDB Atlas
 - Google Gemini API key (free) — see section above
 
@@ -115,33 +128,27 @@ cd backend
 cp .env.example .env
 # ← Edit .env and put your real GEMINI_API_KEY
 
-# Create venv + install (first time)
 python -m venv venv
 venv\Scripts\activate          # Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
 
-# Run the server
 uvicorn server:app --reload --port 8000
 ```
 Backend is ready at **http://localhost:8000**
 
 ### 4. Frontend (New Terminal)
 ```bash
-cd frontend
-cp .env.example .env     # (default already points to localhost:8000)
-
-yarn install
-npx expo start
+cd web
+cp .env.example .env     # Edit with your backend URL
+npm install
+npm run dev
 ```
-
-- Press `w` → open in browser
-- Press `a` → Android emulator
-- Scan QR with Expo Go app on your phone
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 5. Test the AI Features
 1. Sign up / log in (any email + password)
 2. Go to **Mentor** tab → chat with Aether (Gemini)
-3. Go to **Analyze** → record or paste speech → get Gemini analysis
+3. Go to **Analyze** → paste speech transcript → get Gemini analysis
 4. Go to **Debate** → start a real debate with Gemini opponent
 5. Go to **Interview** → do a full mock interview with Gemini
 
@@ -175,17 +182,54 @@ Both are already in `.gitignore`.
 ```
 Ai_Com/
 ├── backend/                 # FastAPI server
-│   ├── server.py
+│   ├── server.py            # Main API with all endpoints
 │   ├── requirements.txt
 │   ├── .env.example
 │   └── start.ps1 / start.sh
-├── frontend/                # Expo app
-│   ├── app/                 # Screens (expo-router)
-│   ├── src/
-│   └── package.json
+├── web/                     # Next.js web application
+│   ├── app/                 # Pages (Next.js app router)
+│   │   ├── api/             # API routes
+│   │   ├── auth/            # Auth pages (login, signup)
+│   │   ├── dashboard/       # Dashboard page
+│   │   ├── mentor/          # AI mentor chat
+│   │   ├── analyze/         # Speech analysis
+│   │   ├── debate/          # Debate practice
+│   │   ├── interview/       # Mock interviews
+│   │   └── missions/        # Daily missions
+│   ├── components/          # UI components
+│   │   └── ui/              # ShadCN-style components
+│   ├── lib/                 # Utilities (api, supabase client)
+│   ├── package.json
+│   └── tailwind.config.js
 ├── README.md
 └── .gitignore
 ```
+
+---
+
+## Backend API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Health check |
+| `/api/auth/signup` | POST | Register user (email, password, name) |
+| `/api/auth/login` | POST | Login, returns JWT token |
+| `/api/auth/me` | GET | Get current user profile |
+| `/api/mentor/chat` | POST | Send message to Aether mentor |
+| `/api/mentor/history` | GET | Get chat history |
+| `/api/speech/analyze` | POST | Analyze speech transcript |
+| `/api/speech/reports` | GET | List speech reports |
+| `/api/debate/start` | POST | Start a debate |
+| `/api/debate/turn` | POST | Submit debate argument |
+| `/api/debate/{id}/finish` | POST | Finish debate, get summary |
+| `/api/debate` | GET | List debates |
+| `/api/debate/topics/suggest` | GET | Get debate topic suggestions |
+| `/api/interview/start` | POST | Start mock interview |
+| `/api/interview/answer` | POST | Submit interview answer |
+| `/api/interview/{id}` | GET | Get interview state |
+| `/api/missions/today` | GET | Get today's 4 daily missions |
+| `/api/missions/complete` | POST | Mark mission complete |
+| `/api/dashboard/stats` | GET | User progress dashboard |
 
 ---
 
