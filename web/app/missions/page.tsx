@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 export default function MissionsPage() {
   const [completedMissions, setCompletedMissions] = useState<Set<string>>(new Set())
@@ -20,17 +21,16 @@ export default function MissionsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <CardTitle className="text-2xl">Daily Missions</CardTitle>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Daily Missions</h1>
+          <p className="text-muted-foreground">Complete your daily communication drills</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
+        
         <div className="grid gap-4 md:grid-cols-2 lg:max-w-3xl">
           {missions.map((mission) => (
-            <Card key={mission.id} className={completedMissions.has(mission.id) ? "opacity-50" : ""}>
+            <Card key={mission.id} className={completedMissions.has(mission.id) ? "opacity-50 card-shadow" : "card-shadow"}>
               <CardHeader>
                 <CardTitle className="text-lg">{mission.title}</CardTitle>
                 <Badge variant="outline">{mission.category}</Badge>
@@ -52,7 +52,7 @@ export default function MissionsPage() {
             </Card>
           ))}
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

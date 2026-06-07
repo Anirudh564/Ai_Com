@@ -8,13 +8,17 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { api } from "@/lib/api"
+import { useAuth } from "@/lib/auth-context"
+import { FcGoogle } from "react-icons/fc"
 
 export default function SignupPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const router = useRouter()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,9 +28,7 @@ export default function SignupPage() {
         method: "POST",
         body: { email, password, name },
       })
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', res.token)
-      }
+      login(res.token, res.user)
       router.push('/dashboard')
     } catch (e) {
       alert('Signup failed')
@@ -35,11 +37,25 @@ export default function SignupPage() {
     }
   }
 
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true)
+    try {
+      const res = await api<{ auth_url: string }>("/api/auth/google/url", { method: "GET" })
+      if (typeof window !== 'undefined') {
+        window.location.href = res.auth_url
+      }
+    } catch (e) {
+      alert('Google signup failed')
+    } finally {
+      setGoogleLoading(false)
+    }
+  }
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-muted">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md card-shadow">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">Create Account</CardTitle>
           <CardDescription>Join Elite Communication Mentor today</CardDescription>
         </CardHeader>
         <CardContent>
@@ -79,9 +95,29 @@ export default function SignupPage() {
               {isLoading ? "Creating account..." : "Sign Up"}
             </Button>
           </form>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-background px-2 text-muted-foreground">or continue with</span>
+            </div>
+          </div>
+          
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleGoogleSignup}
+            disabled={googleLoading}
+          >
+            <FcGoogle className="mr-2 h-4 w-4" />
+            {googleLoading ? "Redirecting..." : "Sign up with Google"}
+          </Button>
+          
           <div className="mt-4 text-center text-sm">
             Already have an account?{" "}
-            <Link href="/login" className="underline">
+            <Link href="/login" className="underline text-primary">
               Sign in
             </Link>
           </div>

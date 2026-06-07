@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 export default function DebatePage() {
   const [topic, setTopic] = useState("")
@@ -36,16 +37,15 @@ export default function DebatePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <CardTitle className="text-2xl">Debate Practice</CardTitle>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Debate Practice</h1>
+          <p className="text-muted-foreground">Practice your argumentation skills</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
+        
         {!debate ? (
-          <Card className="max-w-md">
+          <Card className="max-w-md card-shadow">
             <CardHeader>
               <CardTitle>Start a Debate</CardTitle>
             </CardHeader>
@@ -65,7 +65,7 @@ export default function DebatePage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="h-[calc(100vh-200px)]">
+          <Card className="h-[calc(100vh-200px)] card-shadow">
             <CardHeader>
               <CardTitle className="text-lg">{debate.topic}</CardTitle>
               <Badge>You: {debate.user_stance} | AI: {debate.ai_stance}</Badge>
@@ -94,7 +94,7 @@ export default function DebatePage() {
             </CardContent>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

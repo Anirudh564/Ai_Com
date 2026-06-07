@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 export default function InterviewPage() {
   const [interviewType, setInterviewType] = useState("hr")
@@ -34,16 +36,15 @@ export default function InterviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <CardTitle className="text-2xl">Mock Interviews</CardTitle>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Mock Interviews</h1>
+          <p className="text-muted-foreground">Practice your interview skills</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
+        
         {!interview ? (
-          <Card className="max-w-md">
+          <Card className="max-w-md card-shadow">
             <CardHeader>
               <CardTitle>Start Mock Interview</CardTitle>
             </CardHeader>
@@ -51,15 +52,15 @@ export default function InterviewPage() {
               <div className="space-y-2">
                 <Label htmlFor="type">Interview Type</Label>
                 <Select value={interviewType} onValueChange={setInterviewType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hr">HR Interview</SelectItem>
-                    <SelectItem value="college">College Interview</SelectItem>
-                    <SelectItem value="leadership">Leadership Interview</SelectItem>
-                    <SelectItem value="internship">Internship Interview</SelectItem>
-                    <SelectItem value="stress">Stress Interview</SelectItem>
+                    <SelectItem value="hr" onSelect={(v) => setInterviewType(v)}>HR Interview</SelectItem>
+                    <SelectItem value="college" onSelect={(v) => setInterviewType(v)}>College Interview</SelectItem>
+                    <SelectItem value="leadership" onSelect={(v) => setInterviewType(v)}>Leadership Interview</SelectItem>
+                    <SelectItem value="internship" onSelect={(v) => setInterviewType(v)}>Internship Interview</SelectItem>
+                    <SelectItem value="stress" onSelect={(v) => setInterviewType(v)}>Stress Interview</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -69,7 +70,7 @@ export default function InterviewPage() {
             </CardContent>
           </Card>
         ) : (
-          <Card className="h-[calc(100vh-200px)]">
+          <Card className="h-[calc(100vh-200px)] card-shadow">
             <CardHeader>
               <CardTitle className="text-lg">{interview.type.toUpperCase()} Interview</CardTitle>
               <Badge>Question {interview.turns.length}</Badge>
@@ -99,7 +100,7 @@ export default function InterviewPage() {
             </CardContent>
           </Card>
         )}
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

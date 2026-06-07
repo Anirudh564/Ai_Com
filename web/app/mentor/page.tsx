@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 type Message = {
   role: "user" | "assistant"
@@ -25,7 +26,9 @@ export default function MentorPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    scrollRef.current?.scrollToBottom()
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+    }
   }, [messages])
 
   const handleSend = async () => {
@@ -53,17 +56,16 @@ export default function MentorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <CardTitle className="text-2xl">Aether - Your Communication Mentor</CardTitle>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Aether - Your Communication Mentor</h1>
+          <p className="text-muted-foreground">Chat with your AI communication coach</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
-        <Card className="h-[calc(100vh-200px)] flex flex-col">
-          <CardContent className="flex-1 overflow-y-auto p-4" ref={scrollRef}>
-            <div className="space-y-4">
+        
+        <Card className="h-[calc(100vh-200px)] flex flex-col card-shadow">
+          <CardContent className="flex-1 overflow-y-auto p-4">
+            <div className="space-y-4" ref={scrollRef}>
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -99,7 +101,7 @@ export default function MentorPage() {
           </CardContent>
         </Card>
         
-        <div className="mt-4 flex gap-2">
+        <div className="flex gap-2">
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -111,7 +113,7 @@ export default function MentorPage() {
             Send
           </Button>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

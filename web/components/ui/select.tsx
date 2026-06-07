@@ -1,13 +1,15 @@
 "use client"
 
 import { useState } from "react"
+import { cn } from "@/lib/utils"
 
 interface SelectProps {
   value: string
   onValueChange: (value: string) => void
+  children?: React.ReactNode
 }
 
-export function Select({ value, onValueChange }: SelectProps) {
+export function Select({ value, onValueChange, children }: SelectProps) {
   const [open, setOpen] = useState(false)
   
   return (
@@ -21,29 +23,18 @@ export function Select({ value, onValueChange }: SelectProps) {
       </button>
       {open && (
         <div className="absolute mt-1 w-full rounded-md border bg-popover shadow-md z-50">
-          {["general", "presentation", "interview", "debate"].map((v) => (
-            <button
-              key={v}
-              className="w-full px-3 py-2 text-sm hover:bg-accent text-left"
-              onClick={() => {
-                onValueChange(v)
-                setOpen(false)
-              }}
-            >
-              {v.charAt(0).toUpperCase() + v.slice(1)}
-            </button>
-          ))}
+          {children}
         </div>
       )}
     </div>
   )
 }
 
-export function SelectTrigger({ children }: { children: React.ReactNode }) {
-  return <div className="w-full">{children}</div>
+export function SelectTrigger({ children, className }: { children: React.ReactNode, className?: string }) {
+  return <div className={cn("w-full", className)}>{children}</div>
 }
 
-export function SelectValue({ children }: { children: React.ReactNode }) {
+export function SelectValue({ children }: { children?: React.ReactNode }) {
   return <span>{children}</span>
 }
 
@@ -51,11 +42,22 @@ export function SelectContent({ children }: { children: React.ReactNode }) {
   return <div>{children}</div>
 }
 
-export function SelectItem({ value, children, onSelect }: { value: string, children: React.ReactNode, onSelect: (v: string) => void }) {
+interface SelectItemProps {
+  value: string
+  children: React.ReactNode
+  onSelect?: (v: string) => void
+}
+
+export function SelectItem({ value, children, onSelect }: SelectItemProps) {
+  const handleClick = () => {
+    if (onSelect) {
+      onSelect(value)
+    }
+  }
   return (
     <button
       className="w-full px-3 py-2 text-sm hover:bg-accent text-left"
-      onClick={() => onSelect(value)}
+      onClick={handleClick}
     >
       {children}
     </button>

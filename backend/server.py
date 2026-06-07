@@ -5,10 +5,11 @@ Provides JWT auth, AI mentor chat, speech analysis, AI debate sessions,
 mock interviews, daily missions and a progress dashboard. All AI is powered
 by Google Gemini (free tier) using GEMINI_API_KEY.
 """
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import RedirectResponse
 import os
 import json
 import logging
@@ -18,6 +19,8 @@ import jwt
 from datetime import datetime, timezone, timedelta
 from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional, Dict, Any, Literal
+import secrets
+import httpx
 
 from google import genai
 from google.genai import types
@@ -27,6 +30,7 @@ load_dotenv(os.path.join(ROOT_DIR, ".env"))
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
+SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise RuntimeError("SUPABASE_URL and SUPABASE_KEY are required")
 
@@ -40,6 +44,7 @@ JWT_EXPIRE_DAYS = 30
 
 from supabase import create_client, Client
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase_admin: Client = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY or SUPABASE_KEY)
 
 gemini_client = genai.Client(api_key=GEMINI_API_KEY)
 
@@ -71,6 +76,7 @@ class UserOut(BaseModel):
     id: str
     email: str
     name: str
+    picture: str | None = None
     level: int
     xp: int
     streak_days: int
@@ -208,6 +214,53 @@ async def llm_json(system: str, prompt: str, session_id: Optional[str] = None) -
         except Exception:
             pass
     return {"_raw": fallback}
+
+FRONTEND_URL = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+
+@app.get("/api/auth/google/url")
+async def google_auth_url():
+    if not SUPABASE_URL:
+        raise HTTPException(status_code=500, detail="Supabase not configured")
+    return {"auth_url": f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={FRONTEND_URL}/auth/callback"}
+
+@app.get("/api/auth/callback")
+async def auth_callback(request: Request):
+    code = request.query_params.get("code")
+    if not code:
+        raise HTTPException(status_code=400, detail="No code provided")
+    
+    async with httpx.AsyncClient() as client:
+        token_resp = await client.post(
+            f"{SUPABASE_URL}/auth/v1/token",
+            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            data={"provider": "google", "code": code}
+        )
+        if token_resp.status_code != 200:
+            raise HTTPException(status_code=400, detail="Failed to exchange code")
+        token_data = token_resp.json()
+    
+    access_token = token_data.get("access_token")
+    user_data = token_data.get("user", {})
+    
+    uid = user_data.get("id")
+    if not uid:
+        raise HTTPException(status_code=400, detail="Failed to get user")
+    
+    db_user = supabase.table("users").select("*").eq("id", uid).single().execute().data
+    
+    if not db_user:
+        db_user = {
+            "id": uid,
+            "email": user_data.get("email", ""),
+            "name": user_data.get("user_metadata", {}).get("name", "Google User"),
+            "level": 1,
+            "xp": 0,
+            "streak_days": 0,
+            "created_at": utcnow().isoformat(),
+        }
+        supabase.table("users").insert(db_user).execute()
+    
+    return AuthOut(token=create_token(uid), user=user_to_out(db_user))
 
 @app.post("/api/auth/signup", response_model=AuthOut)
 async def signup(req: SignupReq):

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 export default function AnalyzePage() {
   const [transcript, setTranscript] = useState("")
@@ -32,16 +33,15 @@ export default function AnalyzePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <CardTitle className="text-2xl">Speech Analysis</CardTitle>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Speech Analysis</h1>
+          <p className="text-muted-foreground">Analyze and improve your communication skills</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
+        
         <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+          <Card className="card-shadow">
             <CardHeader>
               <CardTitle>Analyze Your Speech</CardTitle>
             </CardHeader>
@@ -59,14 +59,14 @@ export default function AnalyzePage() {
               <div className="space-y-2">
                 <Label htmlFor="context">Context</Label>
                 <Select value={context} onValueChange={setContext}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select context" />
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="general">General Speech</SelectItem>
-                    <SelectItem value="presentation">Presentation</SelectItem>
-                    <SelectItem value="interview">Interview</SelectItem>
-                    <SelectItem value="debate">Debate</SelectItem>
+                    <SelectItem value="general" onSelect={(v) => setContext(v)}>General Speech</SelectItem>
+                    <SelectItem value="presentation" onSelect={(v) => setContext(v)}>Presentation</SelectItem>
+                    <SelectItem value="interview" onSelect={(v) => setContext(v)}>Interview</SelectItem>
+                    <SelectItem value="debate" onSelect={(v) => setContext(v)}>Debate</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -77,7 +77,7 @@ export default function AnalyzePage() {
           </Card>
           
           {result && (
-            <Card>
+            <Card className="card-shadow">
               <CardHeader>
                 <CardTitle>Analysis Results</CardTitle>
               </CardHeader>
@@ -87,7 +87,7 @@ export default function AnalyzePage() {
                     <div className="text-4xl font-bold">{result.overall_score}</div>
                     <div className="text-sm text-muted-foreground">Overall Score</div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <div className="font-medium">{result.voice_score}</div>
                       <div className="text-sm text-muted-foreground">Voice</div>
@@ -112,7 +112,7 @@ export default function AnalyzePage() {
             </Card>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }

@@ -1,8 +1,13 @@
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000'
 
+interface ApiOptions extends RequestInit {
+  method?: string
+  body?: any
+}
+
 export async function api<T>(
   endpoint: string,
-  options: RequestInit & { method?: string } = {}
+  options: ApiOptions = {}
 ): Promise<T> {
   const url = `${BACKEND_URL}${endpoint}`
   

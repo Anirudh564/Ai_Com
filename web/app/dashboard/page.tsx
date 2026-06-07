@@ -1,44 +1,45 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Link from "next/link"
+import { DashboardLayout } from "@/components/layout/dashboard-layout"
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Elite Communication Mentor</h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-muted-foreground">Level 1 • 0 XP</span>
-            <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-semibold">
-              U
-            </div>
-          </div>
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Your communication progress and daily missions</p>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-6">
+        
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="card-shadow">
             <CardHeader>
               <CardTitle>Daily Missions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                <div className="border rounded-lg p-3">
+                <div className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
                   <p className="font-medium">3-Minute Mirror Talk</p>
                   <p className="text-sm text-muted-foreground">Confidence drill</p>
-                  <Button size="sm" className="mt-2 w-full">Start</Button>
+                  <Link href="/mentor">
+                    <Button size="sm" className="mt-2 w-full">Start</Button>
+                  </Link>
                 </div>
-                <div className="border rounded-lg p-3">
+                <div className="border rounded-lg p-3 hover:bg-muted/50 transition-colors">
                   <p className="font-medium">Pause Drill</p>
                   <p className="text-sm text-muted-foreground">Pacing drill</p>
-                  <Button size="sm" className="mt-2 w-full">Start</Button>
+                  <Link href="/analyze">
+                    <Button size="sm" className="mt-2 w-full">Start</Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="card-shadow">
             <CardHeader>
               <CardTitle>Your Progress</CardTitle>
             </CardHeader>
@@ -47,7 +48,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Speech Score</span>
-                    <span>75%</span>
+                    <span className="font-medium">75%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full">
                     <div className="h-2 bg-primary rounded-full" style={{width: "75%"}}></div>
@@ -56,7 +57,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Confidence</span>
-                    <span>82%</span>
+                    <span className="font-medium">82%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full">
                     <div className="h-2 bg-primary rounded-full" style={{width: "82%"}}></div>
@@ -65,7 +66,7 @@ export default function DashboardPage() {
                 <div>
                   <div className="flex justify-between text-sm mb-1">
                     <span>Structure</span>
-                    <span>68%</span>
+                    <span className="font-medium">68%</span>
                   </div>
                   <div className="h-2 bg-muted rounded-full">
                     <div className="h-2 bg-primary rounded-full" style={{width: "68%"}}></div>
@@ -75,21 +76,29 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
           
-          <Card>
+          <Card className="card-shadow">
             <CardHeader>
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <Button className="w-full" href="/mentor">Chat with Aether</Button>
-                <Button variant="outline" className="w-full" href="/analyze">Analyze Speech</Button>
-                <Button variant="outline" className="w-full" href="/debate">Start Debate</Button>
-                <Button variant="outline" className="w-full" href="/interview">Mock Interview</Button>
+                <Link href="/mentor">
+                  <Button className="w-full">Chat with Aether</Button>
+                </Link>
+                <Link href="/analyze">
+                  <Button variant="outline" className="w-full">Analyze Speech</Button>
+                </Link>
+                <Link href="/debate">
+                  <Button variant="outline" className="w-full">Start Debate</Button>
+                </Link>
+                <Link href="/interview">
+                  <Button variant="outline" className="w-full">Mock Interview</Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   )
 }
