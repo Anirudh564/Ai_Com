@@ -10,6 +10,11 @@ export async function api<T>(
     'Content-Type': 'application/json',
   }
 
+  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+  if (token) {
+    defaultHeaders.Authorization = `Bearer ${token}`
+  }
+
   const config: RequestInit = {
     ...options,
     method: options.method || 'GET',

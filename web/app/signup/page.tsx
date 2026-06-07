@@ -1,20 +1,38 @@
+"use client"
+
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
+import { api } from "@/lib/api"
 
 export default function SignupPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    setTimeout(() => setIsLoading(false), 3000)
+    try {
+      const res = await api<{ token: string; user: any }>("/api/auth/signup", {
+        method: "POST",
+        body: { email, password, name },
+      })
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('token', res.token)
+      }
+      router.push('/dashboard')
+    } catch (e) {
+      alert('Signup failed')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

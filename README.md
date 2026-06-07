@@ -16,8 +16,8 @@ A modern web application built with Next.js that provides:
 - **Progress Dashboard**: Track scores and improvement trends
 
 **Tech Stack:**
-- Frontend: Next.js 15 + Tailwind CSS + ShadCN UI
-- Backend: FastAPI + MongoDB (or Supabase) + Google Gemini (free tier)
+- Frontend: Next.js 15 + Tailwind CSS
+- Backend: FastAPI + Supabase + Google Gemini (free tier)
 - Deployment: Vercel (frontend), Render/Railway (backend)
 
 ### Features
@@ -47,7 +47,7 @@ A modern web application built with Next.js that provides:
 
 - **Python 3.10+**
 - **Node.js 18+** + **npm**
-- **MongoDB** (local or MongoDB Atlas)
+- **Supabase project** (free tier)
 - **Google Gemini API Key** (completely free generous tier) → https://aistudio.google.com/app/apikey
 
 ---
@@ -63,38 +63,131 @@ cd Ai_Com
 
 ### 2. Backend Setup (Required for AI features)
 
+**Windows (use PowerShell script):**
+```powershell
+cd backend
+.\start.ps1
+```
+
+**Or manual setup (all platforms):**
 ```bash
 cd backend
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+# Edit .env with your Supabase and Gemini API keys
 
-# Create venv + install
+# Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate          # Mac/Linux: source venv/bin/activate
+venv\Scripts\activate      # Windows
+# source venv/bin/activate  # Mac/Linux
+
 pip install -r requirements.txt
 
-# Run the server
 uvicorn server:app --reload --port 8000
 ```
 
-Backend will run at **http://localhost:8000**
+**Set up Supabase:**
+1. Create a project at [supabase.com](https://supabase.com)
+2. Go to Settings → API and copy the URL and anon key
+3. In Supabase SQL Editor, run:
 
-### 3. Frontend Setup
+```sql
+CREATE TABLE users (
+  id UUID PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  password_hash TEXT NOT NULL,
+  level INTEGER DEFAULT 1,
+  xp INTEGER DEFAULT 0,
+  streak_days INTEGER DEFAULT 1,
+  last_active TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NOW()
+);
 
+CREATE TABLE chat_messages (
+  id UUID PRIMARY KEY,
+  session_id UUID,
+  user_id UUID REFERENCES users(id),
+  role TEXT,
+  content TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE debates (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  topic TEXT,
+  user_stance TEXT,
+  ai_stance TEXT,
+  level INTEGER,
+  turns JSONB,
+  finished BOOLEAN DEFAULT FALSE,
+  result JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE interviews (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  type TEXT,
+  turns JSONB,
+  finished BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE missions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  date DATE,
+  completed BOOLEAN DEFAULT FALSE,
+  completed_at TIMESTAMP,
+  title TEXT,
+  category TEXT,
+  xp INTEGER
+);
+
+CREATE TABLE reports (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  type TEXT,
+  transcript TEXT,
+  data JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### 3. Start Backend
+**Windows:**
+```powershell
+cd backend
+.\start.ps1
+```
+
+**Manual:**
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate      # Windows
+# source venv/bin/activate  # Mac/Linux
+pip install -r requirements.txt
+uvicorn server:app --reload --port 8000
+```
+
+### 4. Frontend (New Terminal)
 ```bash
 cd web
-cp .env.example .env
-# Edit .env with your backend URL
-
 npm install
 npm run dev
 ```
-
 Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+**Quick Start (Windows shortcut):**
+1. Run `.\start.ps1` in `backend/` (auto-installs deps, starts server)
+2. Run `npm install && npm run dev` in `web/`
+3. Open browser to http://localhost:3000
 
 ---
 
-## Getting a Free Gemini API Key (Required for AI features)
+## Getting a Free Gemini API Key
 
 1. Go to https://aistudio.google.com/app/apikey
 2. Sign in with your Google account (free)
@@ -108,70 +201,12 @@ The app uses **gemini-1.5-flash** by default — fast, high quality, and complet
 
 ---
 
-## Final SOP — Run the Project Locally (Step-by-Step)
-
-### 1. Prerequisites
-- Python 3.10+
-- Node.js 18+ + npm
-- MongoDB running locally (`mongod`) or use free MongoDB Atlas or Supabase
-- Google Gemini API key (free) — see section above
-
-### 2. Clone & Setup
-```bash
-git clone https://github.com/Anirudh564/Ai_Com.git
-cd Ai_Com
-```
-
-### 3. Backend (One Terminal)
-```bash
-cd backend
-cp .env.example .env
-# ← Edit .env and put your real GEMINI_API_KEY
-
-python -m venv venv
-venv\Scripts\activate          # Mac/Linux: source venv/bin/activate
-pip install -r requirements.txt
-
-uvicorn server:app --reload --port 8000
-```
-Backend is ready at **http://localhost:8000**
-
-### 4. Frontend (New Terminal)
-```bash
-cd web
-cp .env.example .env     # Edit with your backend URL
-npm install
-npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-### 5. Test the AI Features
-1. Sign up / log in (any email + password)
-2. Go to **Mentor** tab → chat with Aether (Gemini)
-3. Go to **Analyze** → paste speech transcript → get Gemini analysis
-4. Go to **Debate** → start a real debate with Gemini opponent
-5. Go to **Interview** → do a full mock interview with Gemini
-
-Everything now runs 100% on free Google Gemini. No Claude, no payments.
-
----
-
-## Switching Models Later (Optional)
-
-In `backend/.env` you can set:
-```
-GEMINI_MODEL=gemini-2.0-flash
-```
-Restart the backend. The entire app (mentor, debate, interview, speech) will instantly use the new model.
-
----
-
 ## Environment Files
 
 Never commit real secrets.
 
-- `backend/.env` — contains Mongo + Gemini key + JWT secret
-- `frontend/.env` — contains backend URL
+- `backend/.env` — contains Supabase keys + Gemini key + JWT secret
+- `web/.env` — contains backend URL
 
 Both are already in `.gitignore`.
 
@@ -238,7 +273,7 @@ Ai_Com/
 | Problem | Solution |
 |---------|----------|
 | `Module not found` | Run `npm install` in the `web/` directory |
-| MongoDB connection error | Make sure MongoDB is running locally or use Atlas/Supabase |
+| Supabase connection error | Check `SUPABASE_URL` and `SUPABASE_KEY` in `backend/.env` |
 | Frontend can't reach backend | Check `NEXT_PUBLIC_BACKEND_URL` in `web/.env` and that backend is running |
 | npm install fails | Delete `node_modules` and `package-lock.json`, then reinstall |
 | Port 3000 in use | Kill the process or change port in `next.config.js` |
